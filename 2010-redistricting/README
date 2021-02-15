@@ -1,0 +1,15 @@
+This project is trying to determine the number of voting-age Americans who were affected by 2010-cycle Congressional redistricting
+
+The main script is compare-congress.py, but you'll also need to run:
+
+pip install fiona
+pip install shapely
+pip install geopandas
+wget https://www2.census.gov/geo/tiger/TIGER2010/CD/108/tl_2010_us_cd108.zip
+wget https://www2.census.gov/geo/tiger/TIGER2014/CD/tl_2014_us_cd114.zip
+wget http://www2.census.gov/geo/tiger/TIGER2010DP1/Tract_2010Census_DP1.zip
+unzip tl_2010_us_cd108.zip
+unzip tl_2014_us_cd114.zip
+unzip Tract_2010Census_DP1.zip
+
+For a full write-up of this analysis, see https://tomreitz.com/effect-of-redistricting
