@@ -1,0 +1,10 @@
+{
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [{{TheftLongitude}}, {{TheftLatitude}}]
+  },
+  "properties": {
+    "radius": "{{NumThefts**0.5}}"
+  }
+},

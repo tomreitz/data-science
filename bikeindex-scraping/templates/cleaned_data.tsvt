@@ -1,0 +1,3 @@
+{{TheftTimestamp}}	{{TheftDate}}	{{TheftYear}}	{{TheftMonth}}	{{TheftLatitude}}	{{TheftLongitude}}	{{BikeName}}	{{BikeStatus}}	{{TheftLocation}}	
+{{BikeYear}}	{{BikeanMufacturer}}	{{BikeModel}}	{{BikeColors}}	{{BikeSerialNumber}}	{{BikeFrameSize}}	{{BikeLockingDescription}}	
+{{TheftPoliceDepartmentCity}}	{{TheftPoliceReportNumber}}

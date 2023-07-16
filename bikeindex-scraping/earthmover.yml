@@ -1,0 +1,137 @@
+config:
+  output_dir: ./output/
+
+
+sources:
+  raw_data:
+    file: ./stolen_bikes.tsv
+    header_rows: 1
+
+
+transformations:
+  cleaned_data:
+    operations:
+      - operation: keep_columns
+        source: $sources.raw_data
+        columns:
+          - Stolen at
+          - TheftLatitude
+          - TheftLongitude
+          - BikeName
+          - BikeStatus
+          - Location
+          - Year
+          - Manufacturer
+          - Model
+          - Primary colors
+          - Serial
+          - Frame size
+          - Locking description
+          - "Department & city"
+          - "Police report #"
+          - Found at
+      - operation: distinct_rows
+        source: $transformations.cleaned_data
+      - operation: rename_columns
+        source: $transformations.cleaned_data
+        columns:
+          Stolen at: TheftTimestamp
+          Location: TheftLocation
+          Year: BikeYear
+          Manufacturer: BikeManufacturer
+          Model: BikeModel
+          Primary colors: BikeColors
+          Serial: BikeSerialNumber
+          Frame size: BikeFrameSize
+          Locking description: BikeLockingDescription
+          "Department & city": TheftPoliceDepartmentCity
+          "Police report #": TheftPoliceReportNumber
+          Found at: FoundTimestamp
+      - operation: add_columns
+        source: $transformations.cleaned_data
+        columns:
+          TheftDate: "{%raw%}{{TheftTimestamp[0:10]}}{%endraw%}"
+          TheftYear: "{%raw%}{{TheftTimestamp[0:4]}}{%endraw%}"
+          TheftMonth: "{%raw%}{{TheftTimestamp[5:7]}}{%endraw%}"
+      # some bikes were lost/borrowed/misplaced and recovered, filter out "found" bikes
+      - operation: filter_rows
+        source: $transformations.cleaned_data
+        query: BikeStatus == "stolen"
+        behavior: include
+      - operation: drop_columns
+        source: $transformations.cleaned_data
+        columns:
+          - FoundTimestamp
+  thefts_by_location:
+    operations:
+      - operation: group_by
+        source: $transformations.cleaned_data
+        group_by_columns:
+          - TheftLatitude
+          - TheftLongitude
+        create_columns:
+          NumThefts: count()
+      - operation: filter_rows
+        source: $transformations.thefts_by_location
+        query: TheftLatitude != "" and TheftLongitude != ""
+        behavior: include
+  thefts_by_year:
+    operations:
+      - operation: group_by
+        source: $transformations.cleaned_data
+        group_by_columns:
+          - TheftYear
+        create_columns:
+          NumThefts: count()
+  thefts_by_month:
+    operations:
+      - operation: group_by
+        source: $transformations.cleaned_data
+        group_by_columns:
+          - TheftMonth
+        create_columns:
+          NumThefts: count()
+  thefts_by_manufacturer:
+    operations:
+      - operation: group_by
+        source: $transformations.cleaned_data
+        group_by_columns:
+          - BikeManufacturer
+        create_columns:
+          NumThefts: count()
+
+
+destinations:
+  cleaned_data:
+    source: $transformations.cleaned_data
+    header: "TheftTimestamp	TheftDate	TheftYear	TheftMonth	TheftLatitude	TheftLongitude	BikeName	BikeStatus	TheftLocation	BikeYear	BikeanMufacturer	
+BikeModel	 BikeColors	 BikeSerialNumber	 BikeFrameSize	 BikeLockingDescription	 TheftPoliceDepartmentCity	TheftPoliceReportNumber"
+    template: ./templates/cleaned_data.tsvt
+    extension: tsv
+    linearize: False
+  thefts_by_location:
+    source: $transformations.thefts_by_location
+    header: "{\"type\":\"FeatureCollection\",\"features\":["
+    footer: "]}"
+    template: ./templates/thefts_by_location.geojsont
+    extension: geojson
+    linearize: False
+  thefts_by_year:
+    source: $transformations.thefts_by_year
+    header: "TheftYear	NumThefts"
+    template: ./templates/thefts_by_year.tsvt
+    extension: tsv
+    linearize: False
+  thefts_by_month:
+    source: $transformations.thefts_by_month
+    header: "TheftMonth	NumThefts"
+    template: ./templates/thefts_by_month.tsvt
+    extension: tsv
+    linearize: False
+  thefts_by_manufacturer:
+    source: $transformations.thefts_by_manufacturer
+    header: "BikeManufacturer	NumThefts"
+    template: ./templates/thefts_by_manufacturer.tsvt
+    extension: tsv
+    linearize: False
+
